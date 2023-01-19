@@ -116,7 +116,6 @@ public class StatisticsServiceTest {
         when(statBasketballDAO.findAll()).thenThrow(new NoSuchElementException());
         StatBasketball newReturnedStat = statisticsService.addOrUpdateBasketballStat(newStat);
 
-        // These two would pass
         verify(statBasketballDAO, times(1)).findAll();
         verify(statBasketballDAO,times(0)).update(any());
         verify(statBasketballDAO, times(1)).save((any()));
