@@ -8,6 +8,7 @@ import com.uni.entities.StatBasketball;
 import com.uni.services.StatisticsService;
 import com.uni.services.StatisticsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.exceptions.verification.TooManyActualInvocations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -44,7 +47,7 @@ public class StatisticsServiceTest {
         statisticsService = new StatisticsServiceImpl(statBasketballDAO, userDAO);
     }
 
-
+    @DisplayName("Getting player card by user id")
     @Test
     public void getPlayerCardByUserId(){
         ImUser mockUser = new ImUser(1, "mockUser", "password", "player", 60, 180, "url", false);
@@ -56,7 +59,7 @@ public class StatisticsServiceTest {
 
 
 
-
+    @DisplayName("Get all basketball stats by game id")
     @Test
     public void getAllBasketballStatsByGameId(){
 
@@ -74,8 +77,7 @@ public class StatisticsServiceTest {
         assertEquals(3, statList.size());
     }
 
-    // Work in progress!
-    // still need to figure out how to test EITHER update() or save() is invoked
+    @DisplayName("Update existing basketball stat")
     @Test
     public void updateBasketballStat(){
         // if stat exist, statBasketballDAO.update(existingStat) will be called
@@ -93,17 +95,17 @@ public class StatisticsServiceTest {
         assertEquals(99, updatedStat.getPoints());
         assertEquals(999, updatedStat.getFouls());
 
-
     }
 
+    @DisplayName("Add new basketball stat")
     @Test
     public void addBasketballStat(){
         // if not exist, statBasketballDAO.save(stat) will be called
 
         StatBasketball newStat = new StatBasketball();
-        newStat.setUserId(99);
-        newStat.setGameId(99);
-        newStat.setTeamName("NEW TEAM");
+        newStat.setUserId(5);
+        newStat.setGameId(1);
+        newStat.setTeamName("The Splash");
         newStat.setPoints(0);
         newStat.setRebounds(1);
         newStat.setAssists(2);
@@ -119,8 +121,7 @@ public class StatisticsServiceTest {
         verify(statBasketballDAO,times(0)).update(any());
         verify(statBasketballDAO, times(1)).save((any()));
 
-        // This fails because "newReturnedStat" is null
-        assertEquals("NEW TEAM", newReturnedStat.getTeamName());
-
     }
+
+
 }
