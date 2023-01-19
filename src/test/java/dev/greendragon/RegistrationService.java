@@ -44,34 +44,35 @@ public class RegistrationService {
     @Test
     public void getAllTeams(){
         registrationService.getAllTeams();
-        verify(teamDAO, times(1)).findAll();
+        verify(teamDAO).findAll();
     }
 
     @Test
     public void getAllTeamRequests(){
         registrationService.getAllTeamRequests();
-        verify(teamRequestDAO, times(1)).findAll();
+        verify(teamRequestDAO).findAll();
     }
 
     @Test
     public void registerUser(){
         registrationService.registerUser(new ImUser());
-        verify(userDAO, times(1)).save(any(ImUser.class));
+        verify(userDAO).save(any(ImUser.class));
     }
 
     @Test
     public void getUserFromLoginCredentials(){
         LoginCredentials login = new LoginCredentials("user", "pass");
         ImUser fakeUser = new ImUser(1,"user", "pass", "troll", 1, 1, "", false);
+        ImUser returnedUser = new ImUser();
         System.out.println(login.getPassword());
         when(userDAO.getByUsername(anyString())).thenReturn(fakeUser);
         try {
-            registrationService.getUserFromLoginCredentials(login);
+            returnedUser = registrationService.getUserFromLoginCredentials(login);
         } catch(NullPointerException e){
             e.printStackTrace();
         }
         verify(userDAO).getByUsername(anyString());
-
+        Assertions.assertEquals(fakeUser, returnedUser);
     }
 
 
@@ -116,8 +117,7 @@ public class RegistrationService {
     @Test
     public void createRequest(){
         registrationService.createRequest(new TeamRequest());
-        registrationService.createRequest(new TeamRequest());
-        verify(teamRequestDAO, times(2)).save(any(TeamRequest.class));
+        verify(teamRequestDAO).save(any(TeamRequest.class));
     }
 
     @Test
