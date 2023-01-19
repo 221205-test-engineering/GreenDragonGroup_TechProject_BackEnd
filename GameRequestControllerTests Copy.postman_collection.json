@@ -1,0 +1,352 @@
+{
+	"info": {
+		"_postman_id": "70d15a24-d4fb-4db4-9a24-c2f0dda808cb",
+		"name": "GameRequestControllerTests Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25110689"
+	},
+	"item": [
+		{
+			"name": "200 status code and verified schema for returned object list for Get All Team Requests",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", ()=>{\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"//create schema containing all expected fields and associated data types\r",
+							"var gameReqSchema = {\r",
+							"    \"type\" : \"object\",\r",
+							"    \"properties\" : {\r",
+							"        \"gameRequestId\" : {\"type\" : \"number\"},\r",
+							"        \"gameId\" : {\"type\" : \"number\"},\r",
+							"        \"userId\" : {\"type\" : \"number\"},\r",
+							"        \"venue\" : {\"type\" : \"string\"},\r",
+							"        \"season\" : {\"type\" : \"string\"}    },\r",
+							"    \"required\" : [\"gameId\", \"userId\"],\r",
+							"    \"additionalProperties\" : false\r",
+							"}\r",
+							"//make schema a collection level variable to be referenced in other requests\r",
+							"pm.collectionVariables.set('gameSchema', JSON.stringify(gameReqSchema));\r",
+							"\r",
+							"pm.test(\"All returned Game Requests have correct schema\", ()=>{\r",
+							"    for(let i=0; i<response.length; i++){\r",
+							"         pm.expect(response[i]).to.have.jsonSchema(JSON.parse(pm.collectionVariables.get(\"gameSchema\")));\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:7000/referee-and-games-lookup",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7000",
+					"path": [
+						"referee-and-games-lookup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "200 status code for valid Create new Game Request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"status code is 201\", ()=>{\r",
+							"    pm.response.to.have.status(201); //find out how to do conditional logic\r",
+							"});\r",
+							"\r",
+							"let returnedNewGameRequest = pm.response.json();\r",
+							"\r",
+							"pm.test(\"Response Game Request has correct fields and datatypes\", ()=>{\r",
+							"    pm.expect(returnedNewGameRequest).to.have.jsonSchema(JSON.parse(pm.collectionVariables.get(\"gameSchema\")));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response Game Request contains the expected values\", () => {\r",
+							"    pm.expect(returnedNewGameRequest).to.have.property(\"gameId\", 1);\r",
+							"    pm.expect(returnedNewGameRequest).to.have.property(\"userId\", 5);\r",
+							"    pm.expect(returnedNewGameRequest).to.have.property(\"venue\", \"mall\");\r",
+							"    pm.expect(returnedNewGameRequest).to.have.property(\"season\", \"fall\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"gameRequestId\" : 111,\r\n    \"gameId\" : 1,\r\n    \"userId\" : 5,\r\n    \"venue\" : \"mall\",\r\n    \"season\" : \"fall\" \r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7000/game-requests/apply",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7000",
+					"path": [
+						"game-requests",
+						"apply"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "500 Error for missing required field in request body for Create new Game Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Expect error status code\", ()=>{\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"gameRequestId\" : 111,\r\n    \"userId\" : 5,\r\n    \"venue\" : \"mall\",\r\n    \"season\" : \"season\" \r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7000/game-requests/apply",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7000",
+					"path": [
+						"game-requests",
+						"apply"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "500 Error for request containing extra fields in body for Create new Game Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Expect error status code\", ()=>{\r",
+							"    pm.response.to.have.status(500);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"gameRequestId\" : 111,\r\n    \"gameId\" : 1,\r\n    \"userId\" : 5,\r\n    \"venue\" : \"mall\",\r\n    \"season\" : \"season\" ,\r\n    \"examResults\" : true\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7000/game-requests/apply",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7000",
+					"path": [
+						"game-requests",
+						"apply"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "200 status code for valid Delete Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"}); //get this if its working and the game to delete was in the table\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"gameRequestId\" : 111,\r\n    \"gameId\" : 1,\r\n    \"userId\" : 5,\r\n    \"venue\" : \"mall\",\r\n    \"season\" : \"season\" \r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7000/game-requests/delete",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7000",
+					"path": [
+						"game-requests",
+						"delete"
+					]
+				},
+				"description": "Should: \r\nreturn 204 if item deleted succesfully, return 404 if item not located\r\n500 for incorrect data inputs (validate using schema check)\r\n404 for wrong method sent to endpoint"
+			},
+			"response": []
+		},
+		{
+			"name": "404 Error when request not found for Delete Game Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {\r",
+							"    pm.response.to.have.status(404); // get this if it's working but specific game not in table/already deleted\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"venue\" : \"mall\",\r\n    \"season\" : \"season\" \r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7000/game-requests/delete",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7000",
+					"path": [
+						"game-requests",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "500 Error if request body empty for Delete Game Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 500\", function () {\r",
+							"    pm.response.to.have.status(500);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7000/game-requests/delete",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7000",
+					"path": [
+						"game-requests",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "gameSchema",
+			"value": ""
+		}
+	]
+}
