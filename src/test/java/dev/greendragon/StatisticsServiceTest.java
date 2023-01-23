@@ -5,6 +5,7 @@ import com.uni.daos.UserDAO;
 import com.uni.dtos.PlayerCard;
 import com.uni.entities.ImUser;
 import com.uni.entities.StatBasketball;
+import com.uni.exceptions.NoUsernameFoundException;
 import com.uni.services.StatisticsService;
 import com.uni.services.StatisticsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +58,16 @@ public class StatisticsServiceTest {
         assertEquals("mockUser", playerCard.getUsername());
     }
 
-
+    @DisplayName("Getting player card by invalid user id")
+    @Test
+    public void getPlayerCardByInvalidUserId(){
+        when(userDAO.findById(anyInt())).thenThrow(new NoUsernameFoundException());
+        try{
+            statisticsService.getPlayerCardByUserId(0);
+        } catch (NoUsernameFoundException e){
+            verify(statBasketballDAO, times(0)).findAll();
+        }
+    }
 
     @DisplayName("Get all basketball stats by game id")
     @Test

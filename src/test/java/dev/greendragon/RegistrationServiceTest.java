@@ -7,19 +7,22 @@ import com.uni.dtos.LoginCredentials;
 import com.uni.entities.ImUser;
 import com.uni.entities.Team;
 import com.uni.entities.TeamRequest;
+import com.uni.exceptions.PasswordMismatchException;
 import com.uni.exceptions.ResourceNotFoundException;
+import com.uni.exceptions.TeamCreationException;
 import com.uni.services.RegistrationServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
-public class RegistrationService {
+public class RegistrationServiceTest {
 
     public static TeamDAO teamDAO;
     public static TeamRequestDAO teamRequestDAO;
@@ -39,6 +42,17 @@ public class RegistrationService {
     public void registerTeam() {
         registrationService.registerTeam(new Team());
         verify(teamDAO, times(1)).save(any(Team.class));
+    }
+
+    @Test
+    public void registerTeamNegativeTest() {
+        when(teamDAO.save(any(Team.class))).thenThrow(TeamCreationException.class);
+        try {
+            registrationService.registerTeam(new Team());
+            Assertions.fail("Should not have run without an exception being thrown");
+        }catch(TeamCreationException e){
+            verify(teamDAO, times(1)).save(any(Team.class));
+        }
     }
 
     @Test
@@ -64,7 +78,6 @@ public class RegistrationService {
         LoginCredentials login = new LoginCredentials("user", "pass");
         ImUser fakeUser = new ImUser(1,"user", "pass", "troll", 1, 1, "", false);
         ImUser returnedUser = new ImUser();
-        System.out.println(login.getPassword());
         when(userDAO.getByUsername(anyString())).thenReturn(fakeUser);
         try {
             returnedUser = registrationService.getUserFromLoginCredentials(login);
@@ -73,6 +86,21 @@ public class RegistrationService {
         }
         verify(userDAO).getByUsername(anyString());
         Assertions.assertEquals(fakeUser, returnedUser);
+    }
+
+    @Test
+    public void getUserFromLoginCredentialsIncorrectPassword(){
+        LoginCredentials login = new LoginCredentials("user", "passport");
+        ImUser fakeUser = new ImUser(1,"user", "pass", "troll", 1, 1, "", false);
+        ImUser returnedUser = new ImUser();
+        when(userDAO.getByUsername(anyString())).thenReturn(fakeUser);
+        try {
+            returnedUser = registrationService.getUserFromLoginCredentials(login);
+            Assertions.fail("Should have created a password mismatch exception");
+        } catch(PasswordMismatchException e){
+            verify(userDAO).getByUsername(anyString());
+            Assertions.assertNotEquals(fakeUser, returnedUser);
+        }
     }
 
 
@@ -90,6 +118,17 @@ public class RegistrationService {
     }
 
     @Test
+    public void approveNullRequest(){
+        List<TeamRequest> a = List.of(new TeamRequest(1,"fakeTeam", 3, "status"));
+        when(teamRequestDAO.findAll()).thenReturn(a);
+        try {
+            registrationService.approveRequest(99);
+        }catch(ResourceNotFoundException e){
+            verify(teamRequestDAO).findAll();
+        }
+    }
+
+    @Test
     public void denyRequest(){
         List<TeamRequest> a = List.of(new TeamRequest(1,"fakeTeam", 3, "status"));
         when(teamRequestDAO.findAll()).thenReturn(a);
@@ -100,6 +139,17 @@ public class RegistrationService {
         }
         verify(teamRequestDAO).findAll();
         verify(teamRequestDAO).update(any());
+    }
+
+    @Test
+    public void denyNullRequest(){
+        List<TeamRequest> a = List.of(new TeamRequest(1,"fakeTeam", 3, "status"));
+        when(teamRequestDAO.findAll()).thenReturn(a);
+        try {
+            registrationService.denyRequest(99);
+        }catch(ResourceNotFoundException e){
+            verify(teamRequestDAO).findAll();
+        }
     }
 
     @Test
